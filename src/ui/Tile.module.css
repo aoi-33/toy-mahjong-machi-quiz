@@ -34,6 +34,11 @@
 .hand:hover { transform: none; }
 .pad { cursor: pointer; flex: 0 1 38px; min-width: 0; aspect-ratio: 3/4; }
 
+@media (min-width: 680px) {
+  .hand { flex-basis: 58px; }
+  .pad  { flex-basis: 46px; }
+}
+
 .tile img { display: block; width: 100%; height: 100%; object-fit: contain; }
 
 @keyframes shake {
