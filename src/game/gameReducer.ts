@@ -1,11 +1,22 @@
 import { type Tile, tilesEqual } from '../domain/tile';
-import { type QuizQuestion, generateQuiz } from '../domain/problem-generator';
+import { type QuizQuestion } from '../domain/problem-generator';
+export type { QuizQuestion };
 import { calcScore } from '../domain/scoring';
 
-export type GamePhase = 'idle' | 'playing' | 'feedback' | 'finished';
+export type GamePhase = 'idle' | 'playing' | 'feedback' | 'finished' | 'review';
+export type GameDifficulty = 'easy' | 'medium' | 'hard' | 'expert';
+
+export interface AnsweredQuestion {
+  hand: Tile[];
+  correctWaits: Tile[];
+  userAnswer: Tile[];
+  wasCorrect: boolean;
+  questionNum: number;
+}
 
 export interface GameState {
   phase: GamePhase;
+  gameDifficulty: GameDifficulty;
   question: QuizQuestion | null;
   selectedTiles: Tile[];
   timeRemaining: number;
@@ -15,46 +26,52 @@ export interface GameState {
   streak: number;
   correctCount: number;
   lastAnswerCorrect: boolean | null;
-  seedBase: number;
+  questionPool: QuizQuestion[];
   questionIndex: number;
+  history: AnsweredQuestion[];
 }
 
 export type GameAction =
-  | { type: 'START_GAME'; seed?: number }
+  | { type: 'START_GAME'; questions: QuizQuestion[]; difficulty: GameDifficulty }
   | { type: 'NEXT_QUESTION'; question: QuizQuestion }
   | { type: 'TOGGLE_TILE'; tile: Tile }
   | { type: 'SUBMIT_ANSWER' }
   | { type: 'PASS' }
   | { type: 'TICK' }
   | { type: 'TIME_UP' }
-  | { type: 'SHOW_NEXT' };
+  | { type: 'SHOW_NEXT' }
+  | { type: 'RESET' }
+  | { type: 'END_REVIEW' };
 
 export function initialState(highScore = 0): GameState {
   return {
     phase: 'idle',
+    gameDifficulty: 'medium',
     question: null,
     selectedTiles: [],
-    timeRemaining: 90,
-    totalTime: 90,
+    timeRemaining: 30,
+    totalTime: 30,
     score: 0,
     highScore,
     streak: 0,
     correctCount: 0,
     lastAnswerCorrect: null,
-    seedBase: Date.now(),
+    questionPool: [],
     questionIndex: 0,
+    history: [],
   };
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'START_GAME': {
-      const seed = action.seed ?? Date.now();
+      const pool = action.questions;
       return {
         ...initialState(state.highScore),
         phase: 'playing',
-        seedBase: seed,
-        question: generateQuiz(seed),
+        gameDifficulty: action.difficulty,
+        questionPool: pool,
+        question: pool[0] ?? null,
         questionIndex: 1,
       };
     }
@@ -90,6 +107,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const newTime = isCorrect
         ? state.timeRemaining
         : Math.max(0, state.timeRemaining - 3);
+      const entry: AnsweredQuestion = {
+        hand: state.question.hand,
+        correctWaits: correct,
+        userAnswer: selected,
+        wasCorrect: isCorrect,
+        questionNum: state.questionIndex,
+      };
       return {
         ...state,
         phase: 'feedback',
@@ -99,16 +123,25 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         correctCount: state.correctCount + (isCorrect ? 1 : 0),
         lastAnswerCorrect: isCorrect,
         timeRemaining: newTime,
+        history: [...state.history, entry],
       };
     }
     case 'PASS': {
       if (state.phase !== 'playing') return state;
+      const entry: AnsweredQuestion = {
+        hand: state.question!.hand,
+        correctWaits: state.question!.correctWaits,
+        userAnswer: state.selectedTiles,
+        wasCorrect: false,
+        questionNum: state.questionIndex,
+      };
       return {
         ...state,
         phase: 'feedback',
         streak: 0,
         lastAnswerCorrect: false,
         timeRemaining: Math.max(0, state.timeRemaining - 1),
+        history: [...state.history, entry],
       };
     }
     case 'TICK':
@@ -118,9 +151,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'TIME_UP':
       return { ...state, phase: 'finished', timeRemaining: 0 };
     case 'SHOW_NEXT': {
-      const nextQ = generateQuiz(state.seedBase + state.questionIndex);
+      const pool = state.questionPool;
+      const nextQ = pool[state.questionIndex % pool.length];
       return gameReducer(state, { type: 'NEXT_QUESTION', question: nextQ });
     }
+    case 'RESET':
+      return { ...initialState(state.highScore) };
+    case 'END_REVIEW':
+      return { ...state, phase: 'review' };
     default:
       return state;
   }

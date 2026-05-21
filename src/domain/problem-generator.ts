@@ -6,7 +6,6 @@ export interface QuizQuestion {
   hand: Tile[];
   correctWaits: Tile[];
   difficulty: number;
-  seed: number;
 }
 
 // seeded LCG PRNG
@@ -42,21 +41,17 @@ function buildDeck(): Tile[] {
 }
 
 export function generateQuiz(seed?: number): QuizQuestion {
-  const actualSeed = seed ?? Math.floor(Math.random() * 0xFFFFFFFF);
-  const rand = makePrng(actualSeed);
-  const deck = shuffle(buildDeck(), rand);
+  const actualSeed = (seed ?? Math.floor(Math.random() * 0xFFFFFFFF)) >>> 0;
 
-  for (let attempt = 0; attempt < 50; attempt++) {
-    const shuffled = shuffle(deck, makePrng(actualSeed + attempt));
-    const hand = sortTiles(shuffled.slice(0, 13));
+  // ランダム13枚がテンパイになる確率は約1〜3%のため500回試行する
+  let s = actualSeed;
+  for (let attempt = 0; attempt < 500; attempt++) {
+    s = (Math.imul(1664525, s) + 1013904223) >>> 0;
+    const deck = shuffle(buildDeck(), makePrng(s));
+    const hand = sortTiles(deck.slice(0, 13));
     const waits = calcWaits(hand);
     if (waits.length > 0) {
-      return {
-        hand,
-        correctWaits: waits,
-        difficulty: calcDifficulty(waits.length),
-        seed: actualSeed + attempt,
-      };
+      return { hand, correctWaits: waits, difficulty: calcDifficulty(waits.length) };
     }
   }
 
@@ -68,10 +63,5 @@ export function generateQuiz(seed?: number): QuizQuestion {
     { suit: 'p', num: 2 }, { suit: 'p', num: 3 }, { suit: 'p', num: 4 },
     { suit: 's', num: 5 },
   ]);
-  return {
-    hand: fallback,
-    correctWaits: calcWaits(fallback),
-    difficulty: 2,
-    seed: actualSeed,
-  };
+  return { hand: fallback, correctWaits: calcWaits(fallback), difficulty: 2 };
 }

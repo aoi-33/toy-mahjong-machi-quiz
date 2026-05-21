@@ -1,5 +1,5 @@
 .pad { display: flex; flex-direction: column; gap: 6px; }
-.row { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+.row { display: flex; gap: 2px; justify-content: center; flex-wrap: nowrap; }
 .actions { display: flex; gap: 12px; justify-content: center; margin-top: 8px; }
 
 .btnPass, .btnSubmit {

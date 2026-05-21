@@ -5,9 +5,10 @@ interface Props {
   state: GameState;
   onReplay: () => void;
   onReplayWithSeed: () => void;
+  onReview: () => void;
 }
 
-export function ResultScreen({ state, onReplay, onReplayWithSeed }: Props) {
+export function ResultScreen({ state, onReplay, onReplayWithSeed, onReview }: Props) {
   const shareText = `【待ち読み道場】\nスコア: ${state.score.toLocaleString()}点\n正答: ${state.correctCount}問\n最大コンボ: ${state.streak}\n#待ち読み道場`;
 
   return (
@@ -47,6 +48,9 @@ export function ResultScreen({ state, onReplay, onReplayWithSeed }: Props) {
             type="button"
           >
             結果をコピー
+          </button>
+          <button className={styles.btnSecondary} onClick={onReview} type="button">
+            振り返る
           </button>
         </div>
       </div>
