@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/mahjong-machi-quiz/',
+  base: '/toy-mahjong-machi-quiz/',
   test: {
     environment: 'jsdom',
     globals: true,
