@@ -169,6 +169,17 @@ export default function App() {
         />
       )}
 
+      <footer className={styles.footer}>
+        <a
+          href="https://github.com/aoi-33/toy-mahjong-machi-quiz"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.footerLink}
+        >
+          © 2026 aoi-33
+        </a>
+      </footer>
+
       {phase === 'review' && (
         <ReviewScreen
           state={state}

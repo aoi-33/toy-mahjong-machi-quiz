@@ -279,3 +279,16 @@
   color: var(--color-gray);
   text-align: center;
 }
+.footer {
+  margin-top: auto;
+  padding-top: 16px;
+  text-align: center;
+}
+.footerLink {
+  font-size: 11px;
+  color: var(--color-gray);
+  opacity: 0.6;
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+.footerLink:hover { opacity: 1; }
