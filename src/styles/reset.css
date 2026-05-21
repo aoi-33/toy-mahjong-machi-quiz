@@ -1,0 +1,4 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body { background: var(--color-bg); color: var(--color-ink); font-family: var(--font-sans); }
+button { cursor: pointer; border: none; background: none; font: inherit; }
