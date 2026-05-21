@@ -35,6 +35,8 @@ export default function App() {
   const { state, loading, startGame, toggleTile, submitAnswer, pass, reset, endReview } = useGame();
   const { phase, question, selectedTiles, timeRemaining, totalTime, score, highScore, streak, correctCount, lastAnswerCorrect } = state;
   const [selectedDiff, setSelectedDiff] = useState<GameDifficulty>('medium');
+  const [selectedTime, setSelectedTime] = useState(30);
+  const TIME_OPTIONS = [30, 60, 120];
 
   const waitType = question
     ? classifyWait(question.hand, question.correctWaits)
@@ -131,9 +133,23 @@ export default function App() {
               ))}
             </div>
 
+            <p className={styles.diffTitle}>制限時間</p>
+            <div className={styles.timeGrid}>
+              {TIME_OPTIONS.map(t => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`${styles.btnTime} ${selectedTime === t ? styles.timeActive : ''}`}
+                  onClick={() => setSelectedTime(t)}
+                >
+                  {t}秒
+                </button>
+              ))}
+            </div>
+
             <button
               className={styles.btnStart}
-              onClick={() => { void startGame(selectedDiff); }}
+              onClick={() => { void startGame(selectedDiff, selectedTime); }}
               type="button"
               disabled={loading}
             >
@@ -147,8 +163,8 @@ export default function App() {
       {phase === 'finished' && (
         <ResultScreen
           state={state}
-          onReplay={() => { void startGame(state.gameDifficulty); }}
-          onReplayWithSeed={() => { void startGame(state.gameDifficulty, state.questionPool); }}
+          onReplay={() => { void startGame(state.gameDifficulty, state.totalTime); }}
+          onReplayWithSeed={() => { void startGame(state.gameDifficulty, state.totalTime, state.questionPool); }}
           onReview={endReview}
         />
       )}
@@ -157,7 +173,7 @@ export default function App() {
         <ReviewScreen
           state={state}
           onHome={reset}
-          onReplay={() => { void startGame(state.gameDifficulty); }}
+          onReplay={() => { void startGame(state.gameDifficulty, state.totalTime); }}
         />
       )}
     </div>

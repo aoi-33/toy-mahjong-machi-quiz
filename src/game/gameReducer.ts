@@ -32,7 +32,7 @@ export interface GameState {
 }
 
 export type GameAction =
-  | { type: 'START_GAME'; questions: QuizQuestion[]; difficulty: GameDifficulty }
+  | { type: 'START_GAME'; questions: QuizQuestion[]; difficulty: GameDifficulty; timeLimit: number }
   | { type: 'NEXT_QUESTION'; question: QuizQuestion }
   | { type: 'TOGGLE_TILE'; tile: Tile }
   | { type: 'SUBMIT_ANSWER' }
@@ -70,6 +70,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...initialState(state.highScore),
         phase: 'playing',
         gameDifficulty: action.difficulty,
+        timeRemaining: action.timeLimit,
+        totalTime: action.timeLimit,
         questionPool: pool,
         question: pool[0] ?? null,
         questionIndex: 1,

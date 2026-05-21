@@ -36,12 +36,12 @@ export function useGame() {
     }
   }, [state.phase, state.score]);
 
-  const startGame = useCallback(async (difficulty: GameDifficulty = 'medium', pool?: QuizQuestion[]) => {
+  const startGame = useCallback(async (difficulty: GameDifficulty = 'medium', timeLimit = 30, pool?: QuizQuestion[]) => {
     setLoading(true);
     const raw = pool ?? await loadQuestions();
     const filtered = filterQuestions(raw, difficulty);
     const questions = filtered.length >= 10 ? filtered : raw;
-    dispatch({ type: 'START_GAME', questions, difficulty });
+    dispatch({ type: 'START_GAME', questions, difficulty, timeLimit });
     setLoading(false);
   }, []);
 
